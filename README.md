@@ -97,36 +97,8 @@ Currently, only predefined methods that are linked to packets can be used in the
 
 ### Ready-to-use Bot(s)
 #### [Fisher](./bots/Fisher.py)
-The fisher requires two additional packets:
+The fisher requires one additional packet:
 ```python
-class EntityPositionPacket(Packet): # was named EntityRelativeMove in the past
-    @staticmethod
-    def get_id(context):
-        return 0x29 if context.protocol_version >= 550 else \
-               0x28 if context.protocol_version >= 389 else \
-               0x27 if context.protocol_version >= 345 else \
-               0x26 if context.protocol_version >= 318 else \
-               0x25 if context.protocol_version >= 94 else \
-               0x26 if context.protocol_version >= 70 else \
-               0x15
-
-    packet_name = 'entity position'
-
-    fields = 'entity_id', 'delta_x', 'delta_y', 'delta_z', 'on_ground'
-
-    def read(self, file_object):
-        self.entity_id = VarInt.read(file_object)
-        self.delta_x = Short.read(file_object) / (32 * 128)
-        self.delta_y = Short.read(file_object) / (32 * 128)
-        self.delta_z = Short.read(file_object) / (32 * 128)
-
-        # TODO context.protocol_version < 106 ->
-        # self.delta_x = Byte.read(file_object)
-        # self.delta_y = Byte.read(file_object)
-        # self.delta_z = Byte.read(file_object)
-
-        self.on_ground = Boolean.read(file_object)
-
 class DestroyEntitiesPacket(Packet):
     @staticmethod
     def get_id(context):
@@ -153,7 +125,7 @@ class DestroyEntitiesPacket(Packet):
         for i in range(self.count):
             self.entity_ids.append(VarInt.read(file_object))
 ```
-They can be added with the same procedure as mentioned above.
+It can be added with the same procedure as mentioned above.
 
 To start/stop [fishing](https://minecraft.gamepedia.com/Fishing) press `f`.
 
