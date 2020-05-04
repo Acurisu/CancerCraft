@@ -1,6 +1,6 @@
 # CancerCraft
 
-CancerCraft is a wrapper based on [pyCraft](https://github.com/ammaraskar/pyCraft) that should make coding [Minecraft](https://www.minecraft.net) [bots](https://en.wikipedia.org/wiki/Software_agent) with Python easier and more organised.
+CancerCraft is a wrapper based on [pyCraft](https://github.com/ammaraskar/pyCraft) that should make coding [Minecraft](https://www.minecraft.net) [bots](https://en.wikipedia.org/wiki/Software_agent) with [Python](https://www.python.org) easier and more organised.
 
 ## Installation
 
@@ -45,7 +45,7 @@ class SetExperiencePacket(Packet):
     ])
 ```
 Add it to [`minecraft/networking/packets/clientbound/play/__init__.py`](https://github.com/ammaraskar/pyCraft/blob/master/minecraft/networking/packets/clientbound/play/__init__.py). Don't forget to extend `packets` at the top of the file.
-```Python
+```python
 def get_packets(context):
     packets = {
         ...,
@@ -71,7 +71,7 @@ Keybinds can be set by creating a [class / instance variable](https://docs.pytho
 
 To listen to a certain packet, add the corresponding method to your class.
 Currently available methods:
-```Python
+```python
 login_success
 join_game
 player_position_and_lock
@@ -84,7 +84,7 @@ sound_effect
 ```
 
 #### Example
-```Python
+```python
 class Bot:
     def __init__(self):
         ...
@@ -98,7 +98,7 @@ Currently, only predefined methods that are linked to packets can be used in the
 ### Ready-to-use Bot(s)
 #### [Fisher](./bots/Fisher.py)
 The fisher requires two additional packets:
-```Python
+```python
 class EntityPositionPacket(Packet): # was named EntityRelativeMove in the past
     @staticmethod
     def get_id(context):
