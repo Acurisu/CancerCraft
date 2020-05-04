@@ -78,11 +78,7 @@ class BotWrapper:
 
         if hasattr(self._bot, 'sound_effect') and inspect.ismethod(self._bot.sound_effect):
             self._connection.register_packet_listener(self._bot.sound_effect, clientbound.play.SoundEffectPacket)
-
-        if hasattr(self._bot, 'entity_metadata') and inspect.ismethod(self._bot.entity_metadata):
-            self._connection.register_packet_listener(self._bot.entity_metadata, clientbound.play.EntityMetadataPacket)
         
-
     # Login
     def _login_success(self, packet):
         self._terminal.log(f'Successfully logged into {self._address:s}:{self._port:d}')
@@ -125,8 +121,8 @@ class BotWrapper:
         self._client.lvl = packet.level
         self._terminal.update_xp(self._client.xp_bar, self._client.lvl)
 
-        if hasattr(self._bot, 'respawn') and inspect.ismethod(self._bot.respawn):
-            self._bot.respawn(packet)
+        if hasattr(self._bot, 'set_experience') and inspect.ismethod(self._bot.set_experience):
+            self._bot.set_experience(packet)
     
     def _update_health(self, packet):
         health = int(packet.health)
