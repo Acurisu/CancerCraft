@@ -88,6 +88,11 @@ def get_options():
         options.Bot = import_file('Bot', options.bot_path).Bot
         
 
+    # TODO implement
+    if options.auth_type == 'MCLeaks':
+        raise NotImplementedError
+    ############
+
     return options
 
 def curse(stdscr, options):
