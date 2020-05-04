@@ -48,9 +48,7 @@ Add it to [`minecraft/networking/packets/clientbound/play/__init__.py`](https://
 ```Python
 def get_packets(context):
     packets = {
-
         ...,
-
         SetExperiencePacket
     }
 ```
@@ -62,6 +60,9 @@ Execute `python3 main.py -h` for help or just run `python3 main.py` for it to gu
 I would advise against providing your password directly as an argument as it will be logged in your [shell](https://en.wikipedia.org/wiki/Command-line_interface)'s [command history](https://en.wikipedia.org/wiki/Command_history).
 
 Press `q` to quit and use the arrow keys (up and down) or the scroll wheel to [scroll](https://en.wikipedia.org/wiki/Scrolling) the output [pad](https://docs.python.org/3/howto/curses.html#windows-and-pads) up and down.
+
+## Screenshot(s)
+![](./img/screenshot_0.png)
 
 ## Bot
 To create a bot, simply make a new python file and create a [class](https://docs.python.org/3/tutorial/classes.html#class-objects) called `Bot`.
