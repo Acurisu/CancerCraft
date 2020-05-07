@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 class Client:
     entity_id = 0
 

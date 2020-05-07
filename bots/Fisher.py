@@ -1,7 +1,11 @@
+# -*- coding: utf-8 -*-
+
+# Generic/Built-in
 import math
 import time
 import threading
 
+# ammaraskar/pyCraft
 from minecraft.networking.packets import serverbound
 
 class Client:

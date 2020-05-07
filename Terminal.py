@@ -1,11 +1,12 @@
+# -*- coding: utf-8 -*-
+
+# Generic/Built-in
 import curses
 
+# Owned
+import util
+
 # TODO move to helper
-from datetime import datetime
-
-def get_time():
-    return datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-
 dimensions = { -1: 'Nether', 0: 'Overworld', 1: 'End'}
 ############
 
@@ -182,7 +183,7 @@ class Terminal:
 
     def log(self, string):
         # TODO add colors
-        self._console.addstr(f'[{get_time():s}] [LOG] {string:s}\n')
+        self._console.addstr(f'[{util.get_time():s}] [LOG] {string:s}\n')
         self._console.refresh(0 if self._console_current_line < 0 else self._console_current_line, 0, curses.LINES - self._console_height + 1, 1, curses.LINES - 2, curses.COLS - 1)
         if (self._console_current_line < self._console_max_line):
             self._console_current_line = self._console_current_line + 1

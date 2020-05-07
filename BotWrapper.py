@@ -1,19 +1,19 @@
+# -*- coding: utf-8 -*-
+
+# Generic/Built-in
 import sys
 import importlib
 import inspect
 
+# ammaraskar/pyCraft
 from minecraft import authentication
 from minecraft.exceptions import YggdrasilError
 from minecraft.networking.connection import Connection
 from minecraft.networking.packets import Packet, clientbound, serverbound
 
+# Owned
+import util
 from classes.Client import Client
-
-# TODO move to helper
-def format_uuid(uuid):
-    return f'{uuid[0:8]:s}-{uuid[8:12]:s}-{uuid[12:16]:s}-{uuid[16:20]:s}-{uuid[20:32]:s}'
-############
-
 
 class BotWrapper:
     def __init__(self, terminal, options):
@@ -29,7 +29,7 @@ class BotWrapper:
 
         self._client = Client(auth_token.profile.name, auth_token.profile.id_)
         
-        self._terminal.update_info(self._client.name, format_uuid(self._client.uuid))
+        self._terminal.update_info(self._client.name, util.format_uuid(self._client.uuid))
         self._terminal.log('Successfully authenticated')
 
         self._address = options.address
