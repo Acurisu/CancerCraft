@@ -13,10 +13,55 @@ from minecraft.networking.packets import Packet, clientbound, serverbound
 
 # Owned
 import util
-from classes.Client import Client
+from classes import Client
+from view import Terminal
 
 class BotWrapper:
-    def __init__(self, terminal, options):
+    """
+    Wrapper handling listener registration and updating displayed informations
+
+    Attributes
+    ----------
+    _terminal : Terminal
+        class representing a Terminal which displays informations and output
+    _client : Client
+        class representing a Client containing basic informations about the player
+    _address : str
+        Minecraft server to be conencted to
+    _port : ushort
+        port of the server
+    _connection : Connection
+        class representing a connection to a Minecraft server
+    _bot : Bot
+        class representing a Minecraft bot
+
+    Methods
+    -------
+    _register_listeners(self)
+        Registers all packet listeners
+    _login_success(self, packet)
+        To be executed on 'login success' packet
+    _join_game(self, packet)
+        To be executed on 'join game' packet
+    _player_position_and_lock(self, packet)
+        To be executed on 'player position and lock' packet
+    _respawn(self, packet)
+        To be executed on 'respawn' packet
+    _set_experience(self, packet)
+        To be executed on 'set experience' packet
+    _update_health(self, packet)
+        To be executed on 'update health' packet
+    """
+
+    def __init__(self, terminal: Terminal, options: object):
+        """
+        Parameters
+        ----------
+        terminal : Terminal
+            class representing and managing the terminal and it's subwindows
+        options : object
+            options parsed by the argument parser
+        """
         self._terminal = terminal
 
         auth_token = authentication.AuthenticationToken()
@@ -29,8 +74,8 @@ class BotWrapper:
 
         self._client = Client(auth_token.profile.name, auth_token.profile.id_)
         
-        self._terminal.update_info(self._client.name, util.format_uuid(self._client.uuid))
-        self._terminal.log('Successfully authenticated')
+        self._terminal.info.update(self._client.name, util.format_uuid(self._client.uuid))
+        self._terminal.console.log('Successfully authenticated')
 
         self._address = options.address
         self._port = options.port
@@ -52,9 +97,9 @@ class BotWrapper:
                 sys.exit(0)
             
             if (key == 'KEY_UP'):
-                self._terminal.scroll_up()
+                self._terminal.console.scroll_up()
             elif (key == 'KEY_DOWN'):
-                self._terminal.scroll_down()
+                self._terminal.console.scroll_down()
             else:
                 if hasattr(self._bot, 'keys') and key in self._bot.keys and inspect.ismethod(self._bot.keys[key]):
                     self._bot.keys[key]()
@@ -81,7 +126,7 @@ class BotWrapper:
         
     # Login
     def _login_success(self, packet):
-        self._terminal.log(f'Successfully logged into {self._address:s}:{self._port:d}')
+        self._terminal.console.log(f'Successfully logged into {self._address:s}:{self._port:d}')
 
         if hasattr(self._bot, 'login_success') and inspect.ismethod(self._bot.login_success):
             self._bot.login_success(packet)
@@ -90,25 +135,26 @@ class BotWrapper:
     def _join_game(self, packet):
         self._client.entity_id = packet.entity_id
         self._client.dimension = packet.dimension
-        self._terminal.update_dimension(self._client.dimension)
-        self._terminal.log(f'Successfully joined the game ({hex(self._client.entity_id):s})')
+        self._terminal.position.update_dimension(self._client.dimension)
+        self._terminal.console.log(f'Successfully joined the game ({hex(self._client.entity_id):s})')
 
         if hasattr(self._bot, 'join_game') and inspect.ismethod(self._bot.join_game):
             self._bot.join_game(packet)
 
     def _player_position_and_lock(self, packet):
         packet.apply(self._client)
-        self._terminal.update_xyz(self._client.x, self._client.y, self._client.z)
-        self._terminal.update_facing(self._client.yaw, self._client.pitch)
+        self._terminal.position.update_xyz(self._client.x, self._client.y, self._client.z)
+        self._terminal.position.update_facing(self._client.yaw, self._client.pitch)
 
         if hasattr(self._bot, 'player_position_and_lock') and inspect.ismethod(self._bot.player_position_and_lock):
             self._bot.player_position_and_lock(packet)
 
     def _respawn(self, packet):
-        if (self.dimension == packet.dimension): # useless ?
+        if (self._client.dimension == packet.dimension): # useless ?
             return
 
         self._client.dimension = packet.dimension
+        self._terminal.position.udpate_dimenstion(self._client.dimension)
 
         if hasattr(self._bot, 'respawn') and inspect.ismethod(self._bot.respawn):
             self._bot.respawn(packet)
@@ -119,7 +165,7 @@ class BotWrapper:
 
         self._client.xp_bar = packet.experience_bar
         self._client.lvl = packet.level
-        self._terminal.update_xp(self._client.xp_bar, self._client.lvl)
+        self._terminal.xp.update(self._client.xp_bar, self._client.lvl)
 
         if hasattr(self._bot, 'set_experience') and inspect.ismethod(self._bot.set_experience):
             self._bot.set_experience(packet)
@@ -129,7 +175,7 @@ class BotWrapper:
         if (not self._client.health == health or not self._client.food == packet.food):
             self._client.health = health
             self._client.food = packet.food
-            self._terminal.update_bar(self._client.health, self._client.food)
+            self._terminal.bar.update(self._client.health, self._client.food)
 
         if hasattr(self._bot, 'update_health') and inspect.ismethod(self._bot.update_health):
             self._bot.update_health(packet)

@@ -9,7 +9,7 @@ from getpass import getpass
 
 # Owned
 import util
-from Terminal import Terminal
+from view import Terminal
 from BotWrapper import BotWrapper
 
 __author__ = "Acurisu"
@@ -23,6 +23,10 @@ __email__ = "acurisu@gmail.com"
 __status__ = "Dev"
 
 def get_options():
+    """
+    Parses all required arguments either from command-line input
+    or terminal prompts
+    """
     parser = ArgumentParser(prog="CancerCraft")
     auth_type = parser.add_subparsers(dest='auth_type', help='choose either Mojang or MCLeaks as authentication type')
 
@@ -96,7 +100,17 @@ def get_options():
 
     return options
 
-def curse(stdscr, options):
+def curse(stdscr: object, options: object):
+    """
+    Initialize terminal and bot_wrapper
+
+    Parameters
+    ----------
+    stdscr : object
+        window object representing the whole screen
+    options : object
+        options parsed by the argument parser
+    """
     terminal = Terminal(stdscr)
     bot_wrapper = BotWrapper(terminal, options)
 
