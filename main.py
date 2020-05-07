@@ -1,28 +1,29 @@
+# -*- coding: utf-8 -*-
+
+# Generic/Built-in
 import curses
 import re
-from importlib import util
 from os import path
 from argparse import ArgumentParser
 from getpass import getpass
 
+# Owned
+import util
 from Terminal import Terminal
 from BotWrapper import BotWrapper
 
-# TODO move
-title = 'CancerCraft'
-############
+__author__ = "Acurisu"
+__copyright__ = "Copyright 2020, Acurisu"
+__credits__ = ["Acurisu"]
 
-# TODO move to helper
-def import_file(module_name, path):
-    spec = util.spec_from_file_location(module_name, path)
-    module = util.module_from_spec(spec)
-
-    spec.loader.exec_module(module)
-    return module
-############
+__license__ = "MIT"
+__version__ = "0.1.0"
+__maintainer__ = "Acurisu"
+__email__ = "acurisu@gmail.com"
+__status__ = "Dev"
 
 def get_options():
-    parser = ArgumentParser(prog=title)
+    parser = ArgumentParser(prog="CancerCraft")
     auth_type = parser.add_subparsers(dest='auth_type', help='choose either Mojang or MCLeaks as authentication type')
 
     auth_type_Mojang = auth_type.add_parser('Mojang', help='Mojang authentication')
@@ -85,7 +86,7 @@ def get_options():
         elif not path.isfile(options.bot_path):
             raise ValueError(f'Invalid bot file path: \'{options.bot_path:s}\'')
 
-        options.Bot = import_file('Bot', options.bot_path).Bot
+        options.Bot = util.import_file('Bot', options.bot_path).Bot
         
 
     # TODO implement
