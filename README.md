@@ -131,3 +131,6 @@ To start/stop [fishing](https://minecraft.gamepedia.com/Fishing) press `f`.
 
 ## Thanks
 - Huge thanks to [Ammar Askar](https://github.com/ammaraskar) for [pyCraft](https://github.com/ammaraskar/pyCraft)
+
+## License
+[MIT](https://choosealicense.com/licenses/mit/)
