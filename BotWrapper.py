@@ -134,7 +134,7 @@ class BotWrapper:
     # Play
     def _join_game(self, packet):
         self._client.entity_id = packet.entity_id
-        self._client.dimension = packet.dimension
+        self._client.dimension = packet.dimension_codec['minecraft:dimension_type']['value'][0]['name'].value
         self._terminal.position.update_dimension(self._client.dimension)
         self._terminal.console.log(f'Successfully joined the game ({hex(self._client.entity_id):s})')
 
@@ -150,17 +150,17 @@ class BotWrapper:
             self._bot.player_position_and_lock(packet)
 
     def _respawn(self, packet):
-        if (self._client.dimension == packet.dimension): # useless ?
+        if (self._client.dimension == packet.dimension_codec['minecraft:dimension_type']['value'][0]['name'].value): # useless ?
             return
 
-        self._client.dimension = packet.dimension
+        self._client.dimension = packet.dimension_codec['minecraft:dimension_type']['value'][0]['name'].value
         self._terminal.position.udpate_dimenstion(self._client.dimension)
 
         if hasattr(self._bot, 'respawn') and inspect.ismethod(self._bot.respawn):
             self._bot.respawn(packet)
 
     def _set_experience(self, packet):
-        if (self._client.xp_bar == packet.experience_bar and self._client.lvl == packet.lvl): # useless ?
+        if (self._client.xp_bar == packet.experience_bar and self._client.lvl == packet.level): # useless ?
             return
 
         self._client.xp_bar = packet.experience_bar

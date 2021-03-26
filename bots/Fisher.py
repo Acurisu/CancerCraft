@@ -26,8 +26,8 @@ def calc_distance(a, b):
         return math.sqrt(math.pow(b.x - a.x, 2) + math.pow(b.y - a.y, 2) + math.pow(b.z - a.z, 2))
 
 class Bot:
-    _range_bobber_detection = 5
-    _range_bobber_sound = 3
+    _range_bobber_detection = 6
+    _range_bobber_sound = 6
     _sleep = 1
 
     _active = False
@@ -52,7 +52,7 @@ class Bot:
         packet.apply(self._client)
 
     def spawn_object(self, packet):
-        if packet.type_id == 102 and not self._active and calc_distance(self._client, packet) < self._range_bobber_detection:
+        if packet.type_id == 107 and not self._active and calc_distance(self._client, packet) < self._range_bobber_detection:
             self._terminal.console.log(f'[FISH] Found fishing bobber ({hex(packet.entity_id):s})')
             self._bobber = Bobber(packet.entity_id, packet.x, packet.y, packet.z)
             self._active = True
@@ -66,7 +66,7 @@ class Bot:
                     threading.Timer(self._sleep, self._use_item).start()
 
     def sound_effect(self, packet):
-        if self._active and packet.sound_id == 73 and calc_distance(self._bobber, packet.effect_position) < self._range_bobber_sound:
+        if self._active and packet.sound_id == 272 and calc_distance(self._bobber, packet.effect_position) < self._range_bobber_sound:
             self._terminal.console.log(f'[FISH] Caught something')
             self._active = False
             self._use_item()

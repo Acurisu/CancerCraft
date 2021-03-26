@@ -3,8 +3,6 @@
 # Generic/Built-in
 import curses
 
-# TODO move to helper
-dimensions = { -1: 'Nether', 0: 'Overworld', 1: 'End'}
 ############
 
 class Position:
@@ -46,7 +44,7 @@ class Position:
         pos_y = idx * spacing
         
         dimension = 'Dimension: '
-        dimension_width = len(dimensions[0])
+        dimension_width = len('minecraft:overworld')
         stdscr.addstr(pos_y, padding, dimension)
         self._dimension = curses.newwin(1, dimension_width + 1, pos_y, len(dimension) + padding)
 
@@ -65,7 +63,7 @@ class Position:
         self._facing = curses.newwin(1, facing_width + 1, pos_y, len(facing) + padding)
 
     def update_dimension(self, dimension: int):
-        self._dimension.addstr(0, 0, dimensions[dimension])
+        self._dimension.addstr(0, 0, dimension)
 
         self._dimension.refresh()
 

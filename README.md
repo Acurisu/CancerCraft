@@ -12,6 +12,7 @@ Python module requirements (install using `pip`):
 cryptography>=1.5
 requests
 future
+pynbt
 ```
 
 #### Note
@@ -102,7 +103,9 @@ The fisher requires one additional packet:
 class DestroyEntitiesPacket(Packet):
     @staticmethod
     def get_id(context):
-        return 0x38 if context.protocol_version >= 550 else \
+        return 0x36 if context.protocol_version >= 741 else \
+               0x37 if context.protocol_version >= 721 else \
+               0x38 if context.protocol_version >= 550 else \
                0x37 if context.protocol_version >= 471 else \
                0x35 if context.protocol_version >= 461 else \
                0x36 if context.protocol_version >= 451 else \
