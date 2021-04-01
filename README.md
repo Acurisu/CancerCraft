@@ -75,13 +75,17 @@ Currently available methods:
 ```python
 login_success
 join_game
+disconnect
 player_position_and_lock
 respawn
+chat_message
 set_experience
 update_health
 spawn_object
+entity_position_delta
 destroy_entities
 sound_effect
+entity_teleport
 ```
 
 #### Example
@@ -98,7 +102,7 @@ Currently, only predefined methods that are linked to packets can be used in the
 
 ### Ready-to-use Bot(s)
 #### [Fisher](./bots/Fisher.py)
-The fisher requires one additional packet:
+The fisher requires two additional packets:
 ```python
 class DestroyEntitiesPacket(Packet):
     @staticmethod
@@ -127,8 +131,39 @@ class DestroyEntitiesPacket(Packet):
         self.entity_ids = []
         for i in range(self.count):
             self.entity_ids.append(VarInt.read(file_object))
+
+class EntityTeleportPacket(Packet):
+    @staticmethod
+    def get_id(context):
+        return 0x56 if context.protocol_version >= 721 else \
+               0x57 if context.protocol_version >= 550 else \
+               0x56 if context.protocol_version >= 471 else \
+               0x51 if context.protocol_version >= 461 else \
+               0x52 if context.protocol_version >= 451 else \
+               0x51 if context.protocol_version >= 441 else \
+               0x50 if context.protocol_version >= 389 else \
+               0x4F if context.protocol_version >= 352 else \
+               0x4E if context.protocol_version >= 345 else \
+               0x4D if context.protocol_version >= 343 else \
+               0x4C if context.protocol_version >= 336 else \
+               0x4B if context.protocol_version >= 318 else \
+               0x49 if context.protocol_version >= 110 else \
+               0x4A if context.protocol_version >= 94 else \
+               0x48 if context.protocol_version >= 70 else \
+               0x18
+
+    packet_name = 'entity teleport'
+    get_definition = staticmethod(lambda context: [
+        {'entity_id': VarInt},
+        {'x': Double},
+        {'y': Double},
+        {'z': Double},
+        {'yaw': Angle},
+        {'pitch': Angle},
+        {'on_ground': Boolean}
+    ])
 ```
-It can be added with the same procedure as mentioned above.
+They can be added with the same procedure as mentioned above.
 
 To start/stop [fishing](https://minecraft.gamepedia.com/Fishing) press `f`.
 
