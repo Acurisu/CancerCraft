@@ -4,6 +4,8 @@
 import sys
 import importlib
 import inspect
+import json
+import re
 
 # ammaraskar/pyCraft
 from minecraft import authentication
@@ -83,7 +85,7 @@ class BotWrapper:
         self._connection = Connection(self._address, self._port, auth_token=auth_token)
 
         if hasattr(options, 'Bot'):
-            self._bot = options.Bot(self._terminal, self._connection)
+            self._bot = options.Bot(self._terminal, self._connection, self._client)
         else:
             self._bot = None
 
@@ -108,9 +110,11 @@ class BotWrapper:
         # Login
         self._connection.register_packet_listener(self._login_success, clientbound.login.LoginSuccessPacket)
         # Play
+        self._connection.register_packet_listener(self._disconnect, clientbound.play.DisconnectPacket)
         self._connection.register_packet_listener(self._join_game, clientbound.play.JoinGamePacket)
         self._connection.register_packet_listener(self._player_position_and_lock, clientbound.play.PlayerPositionAndLookPacket)
         self._connection.register_packet_listener(self._respawn, clientbound.play.RespawnPacket)
+        self._connection.register_packet_listener(self._chat_message, clientbound.play.ChatMessagePacket)
         self._connection.register_packet_listener(self._set_experience, clientbound.play.SetExperiencePacket)
         self._connection.register_packet_listener(self._update_health, clientbound.play.UpdateHealthPacket)
 
@@ -118,11 +122,17 @@ class BotWrapper:
         if hasattr(self._bot, 'spawn_object') and inspect.ismethod(self._bot.spawn_object):
             self._connection.register_packet_listener(self._bot.spawn_object, clientbound.play.SpawnObjectPacket)
 
+        if hasattr(self._bot, 'entity_position_delta') and inspect.ismethod(self._bot.entity_position_delta):
+            self._connection.register_packet_listener(self._bot.entity_position_delta, clientbound.play.EntityPositionDeltaPacket)
+
         if hasattr(self._bot, 'destroy_entities') and inspect.ismethod(self._bot.destroy_entities):
             self._connection.register_packet_listener(self._bot.destroy_entities, clientbound.play.DestroyEntitiesPacket)
 
         if hasattr(self._bot, 'sound_effect') and inspect.ismethod(self._bot.sound_effect):
             self._connection.register_packet_listener(self._bot.sound_effect, clientbound.play.SoundEffectPacket)
+
+        if hasattr(self._bot, 'entity_teleport') and inspect.ismethod(self._bot.entity_teleport):
+            self._connection.register_packet_listener(self._bot.entity_teleport, clientbound.play.EntityTeleportPacket)
         
     # Login
     def _login_success(self, packet):
@@ -141,6 +151,12 @@ class BotWrapper:
         if hasattr(self._bot, 'join_game') and inspect.ismethod(self._bot.join_game):
             self._bot.join_game(packet)
 
+    def _disconnect(self, packet):
+        self._terminal.console.log(f'Disconnected: {packet.json_data}')
+
+        if hasattr(self._bot, 'disconnect') and inspect.ismethod(self._bot.disconnect):
+            self._bot.disconnect(packet)
+
     def _player_position_and_lock(self, packet):
         packet.apply(self._client)
         self._terminal.position.update_xyz(self._client.x, self._client.y, self._client.z)
@@ -158,6 +174,23 @@ class BotWrapper:
 
         if hasattr(self._bot, 'respawn') and inspect.ismethod(self._bot.respawn):
             self._bot.respawn(packet)
+
+    def _chat_message(self, packet):
+        msg = ''
+        data = json.loads(packet.json_data);
+        # TODO handle other kind of messages
+        for kind in data.values():
+            for value in kind:
+                if 'text' in value:
+                    msg += value['text']
+
+        msg = re.sub(r'\\u[0-9a-fA-F]{4}', '', msg)
+        # TODO adjust for multiline messages (i.e. message longer than console width)
+        if msg:
+            self._terminal.console.log(f'[CHAT] {msg}')
+
+        if hasattr(self._bot, 'chat_message') and inspect.ismethod(self._bot.chat_message):
+            self._bot.chat_message(packet)
 
     def _set_experience(self, packet):
         if (self._client.xp_bar == packet.experience_bar and self._client.lvl == packet.level): # useless ?
