@@ -2,7 +2,6 @@
 
 # Generic/Built-in
 import math
-import time
 import threading
 
 # ammaraskar/pyCraft
@@ -21,7 +20,7 @@ def calc_distance(a, b):
 class Bot:
     _auto_reconnect = True
     _range_bobber_detection = 2
-    _range_bobber_sound = 4
+    _range_bobber_sound = 8
     _sleep = 1
     _sleep_reconnect = 60
 
@@ -66,11 +65,11 @@ class Bot:
             
     def disconnect(self, packet):
         if self._auto_reconnect:
-            self._active = False;
+            self._active = False
             threading.Timer(self._sleep_reconnect, self._connection.connect).start()
 
     def spawn_object(self, packet):
-        if packet.type_id == 107 and not self._active and calc_distance(self._client, packet) < self._range_bobber_detection:
+        if packet.type_id == 112 and not self._active and calc_distance(self._client, packet) < self._range_bobber_detection:
             self._terminal.console.log(f'[FISH] Found fishing bobber ({hex(packet.entity_id):s})')
             self._bobber = Bobber(packet.entity_id, packet.x, packet.y, packet.z)
             self._active = True
@@ -91,13 +90,13 @@ class Bot:
         if self._active:
             for entity_id in packet.entity_ids:
                 if entity_id == self._bobber.id:
-                    self._terminal.console.log(f'[FISH] Bobber got destroyed')
+                    self._terminal.console.log('[FISH] Bobber got destroyed')
                     self._active = False
                     threading.Timer(self._sleep, self._use_item).start()
 
     def sound_effect(self, packet):
-        if self._active and packet.sound_id == 272 and calc_distance(self._bobber, packet.effect_position) < self._range_bobber_sound:
-            self._terminal.console.log(f'[FISH] Caught something')
+        if self._active and packet.sound_id == 372 and calc_distance(self._bobber, packet.effect_position) < self._range_bobber_sound:
+            self._terminal.console.log('[FISH] Caught something')
             self._active = False
             self._use_item()
             if self._anti_anti_fish:
@@ -107,10 +106,10 @@ class Bot:
     # Custom methods
     def _fish(self):
         if not self._active:
-            self._terminal.console.log(f'[FISH] Started fishing')
+            self._terminal.console.log('[FISH] Started fishing')
             self._use_item()
         else:
-            self._terminal.console.log(f'[FISH] Stopped fishing')
+            self._terminal.console.log('[FISH] Stopped fishing')
             self._active = False
             self._use_item()
 

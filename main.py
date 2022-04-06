@@ -17,7 +17,7 @@ __copyright__ = "Copyright 2020, Acurisu"
 __credits__ = ["Acurisu"]
 
 __license__ = "MIT"
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 __maintainer__ = "Acurisu"
 __email__ = "acurisu@gmail.com"
 __status__ = "Dev"
@@ -28,14 +28,10 @@ def get_options():
     or terminal prompts
     """
     parser = ArgumentParser(prog="CancerCraft")
-    auth_type = parser.add_subparsers(dest='auth_type', help='choose either Mojang or MCLeaks as authentication type')
 
-    auth_type_Mojang = auth_type.add_parser('Mojang', help='Mojang authentication')
-    auth_type_Mojang.add_argument('-u', '--user', dest='username', type=str, help='Mojang username', default=None)
-    auth_type_Mojang.add_argument('-p', '--pass', dest='password', type=str, help='Mojang password', default=None)
-
-    auth_type_MCLeaks = auth_type.add_parser('MCLeaks', help='MCLeaks authentication')
-    auth_type_MCLeaks.add_argument('-n', '--name', dest='name', type=str, help='name of the cached MCLeaks account (leave blank to use a new one)', default=None)
+    parser.add_argument('-cid', '--client-id', dest='client_id', type=str, help='Azure App Client ID', default=None)
+    parser.add_argument('-cs', '--client-secret', dest='client_secret', type=str, help='Azure App Client Secret', default=None)
+    parser.add_argument('-r', '--redirect-port', dest='redirect_port', type=int, help='Redirect URL for the authentication process', default=6969)
 
     parser.add_argument('-s', '--server', dest='server', type=str, help='server host or host:port (enclose IPv6 addresses in square brackets)', default=None)
 
@@ -45,24 +41,11 @@ def get_options():
 
     options = parser.parse_args()
 
-    if not options.auth_type:
-        options.auth_type = input('Enter the desired authentication type (Mojang | MCLeaks): ')
-        
-    # TODO maybe don't be case-sensitive
-    if options.auth_type == 'Mojang':
-        if not hasattr(options, 'username') or not options.username: # TODO maybe use 'easier to ask for forgiveness than permission' (EAFP) over 'look before you leap' (LBYL)
-            options.username = input('Enter your username: ')
+    if not options.client_id:
+        options.client_id = input('Enter an Azure App Client ID: ') # TODO check uuid format
 
-        if not hasattr(options, 'password') or not options.password:
-            options.password = getpass('Enter your password: ') # TODO add 'leave blank for offline mode' (combined with -b)
-    elif options.auth_type == 'MCLeaks':
-        if not hasattr(options, 'name') or not options.name:
-            if options.ignore:
-                options.name = None
-            else:
-                options.name = input('Enter the name of a cached MCLeaks account (leave blank to use a new one): ')
-    else:
-        raise ValueError(f'Invalid authentication type: \'{options.auth_type:s}\'')
+    if not options.client_secret:
+        options.client_secret = getpass('Enter an Azure App Client Secret: ')
 
     if not options.server:
         options.server = input('Enter server host or host:port (enclose IPv6 addresses in square brackets): ')
@@ -92,12 +75,6 @@ def get_options():
 
         options.Bot = util.import_file('Bot', options.bot_path).Bot
         
-
-    # TODO implement
-    if options.auth_type == 'MCLeaks':
-        raise NotImplementedError
-    ############
-
     return options
 
 def curse(stdscr: object, options: object):

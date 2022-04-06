@@ -2,21 +2,39 @@
 
 CancerCraft is a wrapper based on [pyCraft](https://github.com/ammaraskar/pyCraft) that should make coding [Minecraft](https://www.minecraft.net) [bots](https://en.wikipedia.org/wiki/Software_agent) with [Python](https://www.python.org) easier and more organised.
 
+> **Note:** CancerCraft has fully moved to Microsoft login and does not support Mojang accounts anymore.
+
 ## Installation
 
 You have to have at least Python 3.5 and Pip installed.
 
-Python module requirements (install using `pip`):
-
-```bash
-cryptography>=1.5
-requests
-future
-pynbt
-```
+Install the Python module requirements using `pip3 install -r requirements.txt`
 
 #### Note
 As this uses default [Python curses](https://docs.python.org/3/howto/curses.html), it is not (yet) compatible with Windows. Either remove all curses related code or use the [Windows Subsystem for Linux](https://docs.microsoft.com/en-us/windows/wsl/install-win10).
+
+### Microsoft login
+
+The bot requires Azure app credentials which request the needed claims from the users. One does not need to do this for every account. Here's a short guide on creating an Azure app.
+
+1. Visit https://portal.azure.com/ and log in.
+2. Select `App registrations` under `All services` or use the search functionality.
+3. Press `new Registration`:
+    1. Choose a name which the people will see logging in later.
+    2. Set `Supported account types` to `Personal Microsoft accounts only`.
+    3. In `Redirect URI` select `Web` and enter `http://localhost:6969`. One can freely choose the port but keep in mind to set `--redirect-port` if it deviates from the default.
+    4. `Register`.    
+4. Select `Authentication`:
+    1. Tick `Access tokens (used for implicit flows)`.
+    2. `Save`. 
+5. Select `Certificates & secrets`:
+    1. Press `New client secret`.
+    2. Choose a name.
+    3. `Add`.
+    4. Save the `Value` somewhere.
+6. The `Application (client) ID` can be found in `Overview`.
+
+A more detailed explanation can be found [here](https://docs.microsoft.com/en-us/azure/active-directory/develop/quickstart-register-app).
 
 ### Set-Up
 As this is based on pyCraft you need to clone (or download) it. Only the `minecraft` folder is required. Since pyCraft does not have all packets implemented, you have to add additional ones yourself. Helpful resources are [Current Protocol Specification](https://wiki.vg/Protocol) and [MC Dev Data](https://joodicator.github.io/mc-dev-data/). It would be nice to contribute created packet implementations to [pyCraft](https://github.com/ammaraskar/pyCraft).
@@ -26,7 +44,10 @@ This wrapper requires one additional packet:
 class SetExperiencePacket(Packet):
     @staticmethod
     def get_id(context):
-        return 0x48 if context.protocol_version >= 550 else \
+        return 0x51 if context.protocol_version >= 755 else \
+               0x48 if context.protocol_version >= 721 else \
+               0x49 if context.protocol_version >= 707 else \
+               0x48 if context.protocol_version >= 550 else \
                0x47 if context.protocol_version >= 471 else \
                0x43 if context.protocol_version >= 461 else \
                0x44 if context.protocol_version >= 451 else \
@@ -39,11 +60,11 @@ class SetExperiencePacket(Packet):
                0x1f
 
     packet_name = 'set experience'
-    get_definition = staticmethod(lambda context: [
+    definition = [
         {'experience_bar': Float},
         {'level': VarInt},
         {'total_experience': VarInt}
-    ])
+    ]
 ```
 Add it to [`minecraft/networking/packets/clientbound/play/__init__.py`](https://github.com/ammaraskar/pyCraft/blob/master/minecraft/networking/packets/clientbound/play/__init__.py). Don't forget to extend `packets` at the top of the file.
 ```python
@@ -56,13 +77,15 @@ def get_packets(context):
 
 ## Usage
 
-Execute `python3 main.py -h` for help or just run `python3 main.py` for it to guide you through the process. Keep in mind that the auth type arguments ([Mojang](https://www.mojang.com) / [MCLeaks](https://mcleaks.net)) are positional. Thus they and their related arguments have to be at the end.
+Execute `python3 main.py -h` for help or just run `python3 main.py` for it to guide you through the process.
 
-I would advise against providing your password directly as an argument as it will be logged in your [shell](https://en.wikipedia.org/wiki/Command-line_interface)'s [command history](https://en.wikipedia.org/wiki/Command_history).
+I would advise against providing your client secret directly as an argument as it will be logged in your [shell](https://en.wikipedia.org/wiki/Command-line_interface)'s [command history](https://en.wikipedia.org/wiki/Command_history). Most shells however support not logging a command if you add a leading space.
 
 Press `q` to quit and use the arrow keys (up and down) or the scroll wheel to [scroll](https://en.wikipedia.org/wiki/Scrolling) the output [pad](https://docs.python.org/3/howto/curses.html#windows-and-pads) up and down.
 
 ## Screenshot(s)
+![](./img/screenshot_1.png)
+
 ![](./img/screenshot_0.png)
 
 ## Bot
@@ -107,7 +130,8 @@ The fisher requires two additional packets:
 class DestroyEntitiesPacket(Packet):
     @staticmethod
     def get_id(context):
-        return 0x36 if context.protocol_version >= 741 else \
+        return 0x3A if context.protocol_version >= 756 else \
+               0x36 if context.protocol_version >= 741 else \
                0x37 if context.protocol_version >= 721 else \
                0x38 if context.protocol_version >= 550 else \
                0x37 if context.protocol_version >= 471 else \
@@ -135,7 +159,9 @@ class DestroyEntitiesPacket(Packet):
 class EntityTeleportPacket(Packet):
     @staticmethod
     def get_id(context):
-        return 0x56 if context.protocol_version >= 721 else \
+        return 0x62 if context.protocol_version >= 757 else \
+               0x61 if context.protocol_version >= 755 else \
+               0x56 if context.protocol_version >= 721 else \
                0x57 if context.protocol_version >= 550 else \
                0x56 if context.protocol_version >= 471 else \
                0x51 if context.protocol_version >= 461 else \
@@ -153,7 +179,7 @@ class EntityTeleportPacket(Packet):
                0x18
 
     packet_name = 'entity teleport'
-    get_definition = staticmethod(lambda context: [
+    definition = [
         {'entity_id': VarInt},
         {'x': Double},
         {'y': Double},
@@ -161,7 +187,7 @@ class EntityTeleportPacket(Packet):
         {'yaw': Angle},
         {'pitch': Angle},
         {'on_ground': Boolean}
-    ])
+    ]
 ```
 They can be added with the same procedure as mentioned above.
 

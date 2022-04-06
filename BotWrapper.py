@@ -2,21 +2,19 @@
 
 # Generic/Built-in
 import sys
-import importlib
 import inspect
 import json
 import re
 
 # ammaraskar/pyCraft
-from minecraft import authentication
-from minecraft.exceptions import YggdrasilError
 from minecraft.networking.connection import Connection
-from minecraft.networking.packets import Packet, clientbound, serverbound
+from minecraft.networking.packets import clientbound
 
 # Owned
 import util
 from classes import Client
 from view import Terminal
+from helper import authenticate
 
 class BotWrapper:
     """
@@ -66,13 +64,8 @@ class BotWrapper:
         """
         self._terminal = terminal
 
-        auth_token = authentication.AuthenticationToken()
-        if options.auth_type == 'Mojang':
-            try:
-                auth_token.authenticate(options.username, options.password)
-            except YggdrasilError as e:
-                print(e)
-                sys.exit() # TODO Use correct status and not default to 0 as it's a failure
+        self._terminal.console.log("Please head to your browser for authentication.")
+        auth_token = authenticate(options.client_id, options.client_secret, options.redirect_port)
 
         self._client = Client(auth_token.profile.name, auth_token.profile.id_)
         
@@ -177,7 +170,7 @@ class BotWrapper:
 
     def _chat_message(self, packet):
         msg = ''
-        data = json.loads(packet.json_data);
+        data = json.loads(packet.json_data)
         # TODO handle other kind of messages
         for kind in data.values():
             for value in kind:

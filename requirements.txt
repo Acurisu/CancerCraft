@@ -2,3 +2,4 @@ cryptography>=1.5
 requests
 future
 pynbt
+minecraft-launcher-lib
