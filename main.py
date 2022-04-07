@@ -32,6 +32,7 @@ def get_options():
     parser.add_argument('-cid', '--client-id', dest='client_id', type=str, help='Azure App Client ID', default=None)
     parser.add_argument('-cs', '--client-secret', dest='client_secret', type=str, help='Azure App Client Secret', default=None)
     parser.add_argument('-r', '--redirect-port', dest='redirect_port', type=int, help='Redirect URL for the authentication process', default=6969)
+    parser.add_argument('-a', '--auth-code', dest='auth_code', type=str, help='Sets the auth code needed to authenticate without a browser, enter an empty string to get it', default=None)
 
     parser.add_argument('-s', '--server', dest='server', type=str, help='server host or host:port (enclose IPv6 addresses in square brackets)', default=None)
 
@@ -44,36 +45,37 @@ def get_options():
     if not options.client_id:
         options.client_id = input('Enter an Azure App Client ID: ') # TODO check uuid format
 
-    if not options.client_secret:
-        options.client_secret = getpass('Enter an Azure App Client Secret: ')
+    if not options.auth_code == "":
+        if not options.client_secret:
+            options.client_secret = getpass('Enter an Azure App Client Secret: ')
 
-    if not options.server:
-        options.server = input('Enter server host or host:port (enclose IPv6 addresses in square brackets): ')
+        if not options.server:
+            options.server = input('Enter server host or host:port (enclose IPv6 addresses in square brackets): ')
 
-    match = re.match(r'((?P<host>[^\[\]:]+)|\[(?P<addr>[^\[\]]+)\])'
-                     r'(:(?P<port>\d+))?$', options.server)
+        match = re.match(r'((?P<host>[^\[\]:]+)|\[(?P<addr>[^\[\]]+)\])'
+                        r'(:(?P<port>\d+))?$', options.server)
 
-    if match is None:
-        raise ValueError('Invalid server address: \'{options.server:s}\'')
+        if match is None:
+            raise ValueError('Invalid server address: \'{options.server:s}\'')
 
-    options.address = match.group('host') or match.group('addr')
-    options.port = int(match.group('port') or 25565)
+        options.address = match.group('host') or match.group('addr')
+        options.port = int(match.group('port') or 25565)
 
-    if not options.ignore:
-        if not options.bot_path:
-            options.bot_path = input('Enter the relative/absoulte path of the bot file (relative path from: ./bots): ')
+        if not options.ignore:
+            if not options.bot_path:
+                options.bot_path = input('Enter the relative/absoulte path of the bot file (relative path from: ./bots): ')
 
-    if options.bot_path:
-        directory = path.dirname(path.realpath(__file__))
-        if not options.bot_path.endswith('.py'):
-            options.bot_path += '.py'
+        if options.bot_path:
+            directory = path.dirname(path.realpath(__file__))
+            if not options.bot_path.endswith('.py'):
+                options.bot_path += '.py'
 
-        if path.isfile(f'{directory:s}/bots/{options.bot_path:s}'):
-            options.bot_path = f'{directory:s}/bots/{options.bot_path:s}'
-        elif not path.isfile(options.bot_path):
-            raise ValueError(f'Invalid bot file path: \'{options.bot_path:s}\'')
+            if path.isfile(f'{directory:s}/bots/{options.bot_path:s}'):
+                options.bot_path = f'{directory:s}/bots/{options.bot_path:s}'
+            elif not path.isfile(options.bot_path):
+                raise ValueError(f'Invalid bot file path: \'{options.bot_path:s}\'')
 
-        options.Bot = util.import_file('Bot', options.bot_path).Bot
+            options.Bot = util.import_file('Bot', options.bot_path).Bot
         
     return options
 

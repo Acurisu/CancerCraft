@@ -5,6 +5,7 @@ import sys
 import inspect
 import json
 import re
+from time import sleep
 
 # ammaraskar/pyCraft
 from minecraft.networking.connection import Connection
@@ -14,7 +15,7 @@ from minecraft.networking.packets import clientbound
 import util
 from classes import Client
 from view import Terminal
-from helper import authenticate
+from helper import get_auth_code, authenticate
 
 class BotWrapper:
     """
@@ -64,8 +65,16 @@ class BotWrapper:
         """
         self._terminal = terminal
 
-        self._terminal.console.log("Please head to your browser for authentication.")
-        auth_token = authenticate(options.client_id, options.client_secret, options.redirect_port)
+        auth_code = options.auth_code
+        if not options.auth_code:
+            self._terminal.console.log("Please head to your browser for authentication.")
+            auth_code = get_auth_code(options.client_id, options.redirect_port)
+            if options.auth_code == "":
+                self._terminal.console.log(f'Auth Code: {auth_code}')
+                sleep(10)
+                sys.exit(0)
+
+        auth_token = authenticate(options.client_id, options.client_secret, options.redirect_port, auth_code)
 
         self._client = Client(auth_token.profile.name, auth_token.profile.id_)
         

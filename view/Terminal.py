@@ -4,7 +4,6 @@
 import curses
 
 # Owned
-import util
 from .window import Bar, Console, Info, Position, XP
 
 # TODO fix output when being piped

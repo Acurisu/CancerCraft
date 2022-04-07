@@ -83,6 +83,10 @@ I would advise against providing your client secret directly as an argument as i
 
 Press `q` to quit and use the arrow keys (up and down) or the scroll wheel to [scroll](https://en.wikipedia.org/wiki/Scrolling) the output [pad](https://docs.python.org/3/howto/curses.html#windows-and-pads) up and down.
 
+### Server
+
+In the case you want to run the bot on a server without a browser you can execute `python3 main.py -a ""` on a machine with a browser first. This will provide you with the auth code which you then can use on your server with `python3 main.py -a <AUTHCODE>`.
+
 ## Screenshot(s)
 ![](./img/screenshot_1.png)
 
