@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
 
+from util import format_uuid
+
+
 class Client:
     """
     Class representing the player
@@ -30,8 +33,8 @@ class Client:
         pitch
     name : str
         player username (!= login username)
-    uuid : int
-        UUID as number (not formatted)
+    uuid : str
+        UUID
     """
 
     entity_id = 0
@@ -63,4 +66,4 @@ class Client:
             UUID as number (not formatted)
         """
         self.name = name
-        self.uuid = uuid
+        self.uuid = format_uuid(uuid)

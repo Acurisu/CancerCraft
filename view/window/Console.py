@@ -64,10 +64,12 @@ class Console:
         self._current_line = self._current_line + 1
         self._pad.refresh(0 if self._current_line < 0 else self._current_line, 0, curses.LINES - self._height + 1, 1, curses.LINES - 2, curses.COLS - 1)
 
-
     def log(self, string: str):
+        self.print(f'[LOG] {string:s}')
+
+    def print(self, string: str):
         # TODO add colors
-        self._pad.addstr(f'[{util.get_time():s}] [LOG] {string:s}\n')
+        self._pad.addstr(f'[{util.get_time():s}] {string:s}\n')
         self._pad.refresh(0 if self._current_line < 0 else self._current_line, 0, curses.LINES - self._height + 1, 1, curses.LINES - 2, curses.COLS - 1)
         if (self._current_line < self._max_line):
             self._current_line = self._current_line + 1

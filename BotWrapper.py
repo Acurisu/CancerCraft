@@ -3,8 +3,6 @@
 # Generic/Built-in
 import sys
 import inspect
-import json
-import re
 from time import sleep
 
 # ammaraskar/pyCraft
@@ -12,7 +10,6 @@ from minecraft.networking.connection import Connection
 from minecraft.networking.packets import clientbound
 
 # Owned
-import util
 from classes import Client
 from view import Terminal
 from helper import get_auth_code, authenticate
@@ -78,7 +75,7 @@ class BotWrapper:
 
         self._client = Client(auth_token.profile.name, auth_token.profile.id_)
         
-        self._terminal.info.update(self._client.name, util.format_uuid(self._client.uuid))
+        self._terminal.info.update(self._client.name, self._client.uuid)
         self._terminal.console.log('Successfully authenticated')
 
         self._address = options.address
@@ -116,7 +113,6 @@ class BotWrapper:
         self._connection.register_packet_listener(self._join_game, clientbound.play.JoinGamePacket)
         self._connection.register_packet_listener(self._player_position_and_lock, clientbound.play.PlayerPositionAndLookPacket)
         self._connection.register_packet_listener(self._respawn, clientbound.play.RespawnPacket)
-        self._connection.register_packet_listener(self._chat_message, clientbound.play.ChatMessagePacket)
         self._connection.register_packet_listener(self._set_experience, clientbound.play.SetExperiencePacket)
         self._connection.register_packet_listener(self._update_health, clientbound.play.UpdateHealthPacket)
 
@@ -135,6 +131,9 @@ class BotWrapper:
 
         if hasattr(self._bot, 'entity_teleport') and inspect.ismethod(self._bot.entity_teleport):
             self._connection.register_packet_listener(self._bot.entity_teleport, clientbound.play.EntityTeleportPacket)
+
+        if hasattr(self._bot, 'chat_message') and inspect.ismethod(self._bot.chat_message):
+            self._connection.register_packet_listener(self._bot.chat_message, clientbound.play.ChatMessagePacket)
         
     # Login
     def _login_success(self, packet):
@@ -176,23 +175,6 @@ class BotWrapper:
 
         if hasattr(self._bot, 'respawn') and inspect.ismethod(self._bot.respawn):
             self._bot.respawn(packet)
-
-    def _chat_message(self, packet):
-        msg = ''
-        data = json.loads(packet.json_data)
-        # TODO handle other kind of messages
-        for kind in data.values():
-            for value in kind:
-                if 'text' in value:
-                    msg += value['text']
-
-        msg = re.sub(r'\\u[0-9a-fA-F]{4}', '', msg)
-        # TODO adjust for multiline messages (i.e. message longer than console width)
-        if msg:
-            self._terminal.console.log(f'[CHAT] {msg}')
-
-        if hasattr(self._bot, 'chat_message') and inspect.ismethod(self._bot.chat_message):
-            self._bot.chat_message(packet)
 
     def _set_experience(self, packet):
         if (self._client.xp_bar == packet.experience_bar and self._client.lvl == packet.level): # useless ?

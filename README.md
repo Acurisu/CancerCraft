@@ -197,6 +197,11 @@ They can be added with the same procedure as mentioned above.
 
 To start/stop [fishing](https://minecraft.gamepedia.com/Fishing) press `f`.
 
+The fisher disconnects as soon as the player has less than 15 health. This is to prevent dying under normal circumstances.
+
+The fisher also replies to messages based on `replies.json` in which a key is the regex to match and the value corresponds to the reply.
+This serves mainly as an example and depending on the plugins on a server could crash as errors are not handled fully.
+
 ## Thanks
 - Huge thanks to [Ammar Askar](https://github.com/ammaraskar) for [pyCraft](https://github.com/ammaraskar/pyCraft)
 

@@ -1,11 +1,16 @@
 # -*- coding: utf-8 -*-
 
 # Generic/Built-in
+import sys
 import math
 import threading
+from random import choice
+import json
+import re
+from functools import reduce
 
 # ammaraskar/pyCraft
-from minecraft.networking.packets import serverbound
+from minecraft.networking.packets import serverbound, clientbound
 
 class Bobber:
     def __init__(self, id, x, y, z):
@@ -24,7 +29,7 @@ class Bot:
     _sleep = 1
     _sleep_reconnect = 60
 
-    _anti_anti_fish = True
+    _anti_anti_fish = False
     _yaw_movement = 23
     _looking_away = False
 
@@ -34,6 +39,12 @@ class Bot:
         self._terminal = terminal
         self._connection = connection
         self._client = client
+
+        with open('replies.json') as json_file:
+            data = json.load(json_file)
+            self._patterns = list()
+            for (key, val) in data.items():
+                self._patterns.append((re.compile(key.replace('§name§', self._client.name)), val))
 
         self.keys = { 
             'f': self._fish
@@ -102,6 +113,77 @@ class Bot:
             if self._anti_anti_fish:
                 self._look_over()
             threading.Timer(self._sleep, self._use_item).start()
+
+    def update_health(self, packet):
+        health = int(packet.health)
+        if health < 15:
+            self._connection.disconnect()
+            self._terminal.console.log('[FISH] Received too much damage!')
+            sys.exit(0)
+
+    def chat_message(self, packet):
+        msg = ''
+        data = json.loads(packet.json_data)
+
+        if 'translate' in data and 'with' in data:
+            ty = data['translate']
+            wi = data['with']
+
+            if packet.position == clientbound.play.ChatMessagePacket.Position.CHAT:
+                msg += '[CHAT]'
+                if ty == 'chat.type.text':
+                    name = reduce((lambda acc, val: acc + val['text']), wi[0]['extra'], "") if 'extra' in wi[0] else "" + wi[0]['text']
+                    txt = reduce((lambda acc, val: acc + val['text']), wi[1]['extra'], "") if 'extra' in wi[1] else "" + wi[1]['text']
+                    msg += f' <{name}> {txt}'
+
+                    if not packet.sender == self._client.uuid:
+                        for (reg, val) in self._patterns:
+                            match = reg.match(txt)
+                            if match:
+                                packet = serverbound.play.ChatPacket()
+                                if isinstance(val, list):
+                                    val = choice(val)
+
+                                packet.message = val.format(*match.groups())
+                                self._connection.write_packet(packet)
+                                break
+                else:
+                    self._terminal.console.log(f'{data}')
+            elif packet.position == clientbound.play.ChatMessagePacket.Position.SYSTEM:
+                msg += '[SERVER]'
+                if ty == 'multiplayer.player.joined':
+                    name = wi[0]['insertion']
+                    msg += f' {name} joined the game'
+                elif ty == 'multiplayer.player.left':
+                    name = wi[0]['text']
+                    msg += f' {name} left the game'
+                elif ty == 'commands.message.display.incoming':
+                    name = wi[1]['text']
+                    txt = wi[1]['text']
+                    msg += f' [TELL] {name}: {txt}'
+                elif ty.startswith('death'):
+                    name = wi[0]['insertion']
+                    msg += f' {name} died'
+                elif ty == 'chat.type.announcement':
+                    txt = reduce((lambda acc, val: acc + val['text']), wi[1]['extra'], "") if 'extra' in wi[1] else "" + wi[1]['text']
+                    msg += f' {txt}'
+                elif ty == 'gameMode.changed':
+                    return
+                elif ty == 'chat.type.advancement.task':
+                    return
+                elif ty == 'chat.type.advancement.challenge':
+                    return
+                else:
+                    self._terminal.console.log(f'{data}')
+        else:
+            if 'extra' in data:
+                msg = reduce((lambda acc, val: acc + val['text']), data['extra'], msg)
+            if 'text' in data:
+                msg += data['text']
+
+        # TODO adjust for multiline messages (i.e. message longer than console width)
+        if msg:
+            self._terminal.console.print(msg)
 
     # Custom methods
     def _fish(self):

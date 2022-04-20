@@ -1,0 +1,19 @@
+{
+	"§name§": [
+		"What about me?",
+		"Did I hear my name?"
+	],
+	"hi": "hello",
+	"hello": "hi",
+	"how are you": "marvelous, what about you?",
+	"(.*)i use (\\w+) (.*)": [
+		"I also use {1}",
+		"I would never use {1}"
+	],
+	"(.*)human(.*)": [
+		"I am also human",
+		"I wish I was human...",
+		"I am not human",
+		"I am not human, and that's a good thing"
+	]
+}
